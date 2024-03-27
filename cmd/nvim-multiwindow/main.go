@@ -1,28 +1,52 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	ps "github.com/mitchellh/go-ps"
 	"os"
+	"strings"
+
+	ps "github.com/mitchellh/go-ps"
 )
 
-func main() {
+type Terminal string
+
+const (
+	WezTerm Terminal = "wezterm"
+)
+
+func getRunningTerminal() (ps.Process, error) {
 	pid := os.Getpid()
-	process, err := ps.FindProcess(pid)
+
+	for range 5 {
+		process, err := ps.FindProcess(pid)
+
+		if err != nil {
+			return nil, err
+		}
+
+		parentProcess, err := ps.FindProcess(process.PPid())
+
+		if err != nil {
+			return nil, err
+		}
+
+		if strings.Contains(parentProcess.Executable(), string(WezTerm)) {
+			return parentProcess, nil
+		}
+
+		pid = parentProcess.Pid()
+	}
+
+	return nil, errors.New("terminal not found")
+}
+
+func main() {
+	terminal, err := getRunningTerminal()
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Process is %s\n", process.Executable())
-	fmt.Printf("Process ID %d\n", process.Pid())
-
-	parentProcess, err := ps.FindProcess(process.PPid())
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Parent Process is %s\n", parentProcess.Executable())
-	fmt.Printf("Parent Process ID %d\n", parentProcess.Pid())
-
+	fmt.Printf("Terminal: %s\n\twith pid:%d\n", terminal.Executable(), terminal.Pid())
 }
