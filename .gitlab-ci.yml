@@ -5,54 +5,44 @@ stages:
 
 variables:
     PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/nvim-multiwindow/${CI_COMMIT_TAG}"
+    DARWIN_BINARY: "nvim-multiwindow-darwin-arm64"
+    WINDOWS_BINARY: "nvim-multiwindow-windows-amd64"
+    LINUX_BINARY: "nvim-multiwindow-linux-amd64"
 
-build:mac:
+build:
   stage: build
   image: golang:1.22
+  rules:
+    - if: $CI_COMMIT_TAG
   script: 
-    - env GOOS=darwin GOARCH=arm64 go build -o nvim-multiwindow-darwin-arm64 cmd/nvim-multiwindow/main.go
+    - env GOOS=darwin GOARCH=arm64 go build -o out/$DARWIN_BINARY cmd/nvim-multiwindow/main.go
+    - env GOOS=windows GOARCH=amd64 go build -o out/$WINDOWS_BINARY cmd/nvim-multiwindow/main.go
+    - env GOOS=linux GOARCH=amd64 go build -o out/$LINUX_BINARY cmd/nvim-multiwindow/main.go
   artifacts:
       paths:
-          - nvim-multiwindow-darwin-arm64
+          - out/
 
-build:windows:
-  stage: build
-  image: golang:1.22
-  script: 
-    - env GOOS=windows GOARCH=amd64 go build -o nvim-multiwindow-windows-amd64 cmd/nvim-multiwindow/main.go
-  artifacts:
-      paths:
-          - nvim-multiwindow-windows-amd64
-
-build:linux:
-  stage: build
-  image: golang:1.22
-  script: 
-    - env GOOS=linux GOARCH=amd64 go build -o nvim-multiwindow-linux-amd64 cmd/nvim-multiwindow/main.go
-  artifacts:
-      paths:
-          - nvim-multiwindow-linux-amd64
+upload:
+  stage: upload
+  image: curlimages/curl:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file out/${DARWIN_BINARY} "${PACKAGE_REGISTRY_URL}/${DARWIN_BINARY}"
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file out/${WINDOWS_BINARY} "${PACKAGE_REGISTRY_URL}/${WINDOWS_BINARY}"
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file out/${LINUX_BINARY} "${PACKAGE_REGISTRY_URL}/${LINUX_BINARY}"
 
 release:
-    stage: release
-    image: registry.gitlab.com/gitlab-org/release-cli:latest
-    needs:
-        - job: build:mac
-          artifacts: true
-        - job: build:windows
-          artifacts: true
-        - job: build:linux
-          artifacts: true
-    release:
-        tag_name: '$CI_COMMIT_TAG'
-        description: '$CI_COMMIT_TAG'
-        assets:
-            links:
-                - name: "nvim-multiwindow-darwin-arm64"
-                  filepath: "nvim-multiwindow-darwin-arm64"
-
-                - name: "nvim-multiwindow-windows-amd64"
-                  filepath: "nvim-multiwindow-windows-amd64"
-
-                - name: "nvim-multiwindow-linux-amd64"
-                  filepath: "nvim-multiwindow-linux-amd64"
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
+        --assets-link "{\"name\":\"${DARWIN_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${DARWIN_BINARY}\"}" \
+        --assets-link "{\"name\":\"${WINDOWS_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${WINDOWS_BINARY}\"}" \
+        --assets-link "{\"name\":\"${LINUX_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_BINARY}\"}"
