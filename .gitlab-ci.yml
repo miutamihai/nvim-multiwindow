@@ -1,5 +1,16 @@
 image: golang:1.22
 
 build:mac:
+  stage: build
   script: 
     - env GOOS=darwin GOARCH=arm64 make build
+
+build:windows:
+  stage: build
+  script: 
+    - env GOOS=windows GOARCH=amd64 make build
+
+build:linux:
+  stage: build
+  script: 
+    - env GOOS=linux GOARCH=amd64 make build
