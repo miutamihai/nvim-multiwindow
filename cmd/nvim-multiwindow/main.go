@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"mihaimiuta/nvim-multiwindow/internal/command/input"
 	"mihaimiuta/nvim-multiwindow/internal/terminal"
 	"os"
@@ -21,17 +21,15 @@ func main() {
 		panic(err)
 	}
 
-	cwd, err := os.Getwd()
-
-	if err != nil {
-		panic(err)
+	if len(os.Args) != 2 {
+		panic(errors.New("Needs exactly one argument"))
 	}
 
-	args := append(commandInput.Args, "nvim", cwd)
+	file := os.Args[1]
 
+	args := append(commandInput.Args, "nvim", file, "-n")
 	command := exec.Command(commandInput.Name, args...)
-	output, startError := command.CombinedOutput()
-	fmt.Printf("%+v", string(output))
+	_, startError := command.CombinedOutput()
 
 	if startError != nil {
 		panic(startError)
