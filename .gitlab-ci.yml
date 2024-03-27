@@ -33,10 +33,26 @@ build:linux:
       paths:
           - nvim-multiwindow-linux-amd64
 
-upload:
-    stage: upload
-    image: curlimages/curl:latest
-    script:
-        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-darwin-arm64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-darwin-arm64'
-        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-windows-amd64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-windows-amd64'
-        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-linux-amd64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-linux-amd64'
+release:
+    stage: release
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    needs:
+        - job: build:mac
+          artifacts: true
+        - job: build:windows
+          artifacts: true
+        - job: build:linux
+          artifacts: true
+    release:
+        tag_name: '$CI_COMMIT_TAG'
+        description: '$CI_COMMIT_TAG'
+        assets:
+            links:
+                - name: "nvim-multiwindow-darwin-arm64"
+                  filepath: "nvim-multiwindow-darwin-arm64"
+
+                - name: "nvim-multiwindow-windows-amd64"
+                  filepath: "nvim-multiwindow-windows-amd64"
+
+                - name: "nvim-multiwindow-linux-amd64"
+                  filepath: "nvim-multiwindow-linux-amd64"
