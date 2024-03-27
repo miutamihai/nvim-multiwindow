@@ -13,7 +13,7 @@ type CommandInput struct {
 func Build(term terminal.Terminal) (CommandInput, error) {
 	switch term {
 	case terminal.WezTerm:
-		return CommandInput{Name: "/opt/homebrew/bin/wezterm-gui", Args: []string{"start"}}, nil
+		return CommandInput{Name: "wezterm", Args: []string{"start"}}, nil
 	default:
 		return CommandInput{}, errors.New("unknown terminal passed")
 	}
