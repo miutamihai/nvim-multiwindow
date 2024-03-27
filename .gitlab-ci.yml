@@ -37,7 +37,7 @@ upload:
     stage: upload
     image: curlimages/curl:latest
     rules:
-        - if: false
+        - if: ""
     script:
         - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/nvim-multiwindow-${CI_COMMIT_TAG} ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-${CI_COMMIT_TAG}'
 
@@ -46,6 +46,6 @@ release:
     stage: release
     image: registry.gitlab.com/gitlab-org/release-cli:latest
     rules:
-        - if: false
+        - if: ""
     script:
         - 'release-cli create --name "nvim-multiwindow-$CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG --assets-link "{\"name\":\"nvim-multiwindow-${CI_COMMIT_TAG}\", \"url\":\"${PACKAGE_REGISTRY_URL}/nvim-multiwindow-${CI_COMMIT_TAG}\"}"'
