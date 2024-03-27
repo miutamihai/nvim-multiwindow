@@ -3,15 +3,16 @@ package terminal
 import (
 	"errors"
 	"os"
-	"strings"
 
 	"github.com/mitchellh/go-ps"
 )
 
+const numberOfGenerationsToTry = 5
+
 func Get() (Terminal, error) {
 	pid := os.Getpid()
 
-	for range 5 {
+	for range numberOfGenerationsToTry {
 		process, err := ps.FindProcess(pid)
 
 		if err != nil {
@@ -24,8 +25,8 @@ func Get() (Terminal, error) {
 			return "", err
 		}
 
-		if strings.Contains(parentProcess.Executable(), string(WezTerm)) {
-			return WezTerm, nil
+		if term, err := match(parentProcess.Executable()); err == nil {
+			return term, nil
 		}
 
 		pid = parentProcess.Pid()
