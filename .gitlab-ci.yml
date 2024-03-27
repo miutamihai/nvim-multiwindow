@@ -1,0 +1,6 @@
+image: golang:1.22
+
+build:
+  stage: build
+  script: 
+    - make build
