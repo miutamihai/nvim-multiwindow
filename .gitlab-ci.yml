@@ -32,3 +32,11 @@ build:linux:
   artifacts:
       paths:
           - nvim-multiwindow-linux-amd64
+
+upload:
+    stage: upload
+    image: curlimages/curl:latest
+    script:
+        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-darwin-arm64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-darwin-arm64'
+        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-windows-amd64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-windows-amd64'
+        - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file nvim-multiwindow-linux-amd64 ${PACKAGE_REGISTRY_URL}/nvim-multiwindow-linux-amd64'
