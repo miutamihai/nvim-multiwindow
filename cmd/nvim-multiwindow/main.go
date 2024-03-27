@@ -29,8 +29,8 @@ func main() {
 
 	args := append(commandInput.Args, "nvim", cwd)
 
-	pula := exec.Command(commandInput.Name, args...)
-	output, startError := pula.CombinedOutput()
+	command := exec.Command(commandInput.Name, args...)
+	output, startError := command.CombinedOutput()
 	fmt.Printf("%+v", string(output))
 
 	if startError != nil {
