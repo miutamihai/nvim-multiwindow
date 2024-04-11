@@ -1,4 +1,4 @@
-package terminal
+package parent
 
 import (
 	"errors"
@@ -9,20 +9,20 @@ import (
 
 const numberOfGenerationsToTry = 5
 
-func Get() (Terminal, error) {
+func Get() (Parent, error) {
 	pid := os.Getpid()
 
 	for range numberOfGenerationsToTry {
 		process, err := ps.FindProcess(pid)
 
 		if err != nil {
-			return "", err
+			return Parent{}, err
 		}
 
 		parentProcess, err := ps.FindProcess(process.PPid())
 
 		if err != nil {
-			return "", err
+			return Parent{}, err
 		}
 
 		if term, err := match(parentProcess.Executable()); err == nil {
@@ -32,5 +32,5 @@ func Get() (Terminal, error) {
 		pid = parentProcess.Pid()
 	}
 
-	return "", errors.New("terminal not found")
+	return Parent{}, errors.New("terminal not found")
 }

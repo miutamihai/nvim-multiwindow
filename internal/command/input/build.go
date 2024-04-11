@@ -2,7 +2,7 @@ package input
 
 import (
 	"errors"
-	"mihaimiuta/nvim-multiwindow/internal/terminal"
+	"mihaimiuta/nvim-multiwindow/internal/parent"
 )
 
 type CommandInput struct {
@@ -10,10 +10,12 @@ type CommandInput struct {
 	Args []string
 }
 
-func Build(term terminal.Terminal) (CommandInput, error) {
-	switch term {
-	case terminal.WezTerm:
+func Build(parentProcess parent.Parent) (CommandInput, error) {
+	switch parentProcess.Program {
+	case parent.WezTerm:
 		return CommandInput{Name: "wezterm", Args: []string{"start"}}, nil
+	case parent.Neovide:
+		return CommandInput{Name: "neovide", Args: []string{"--", "-n"}}, nil
 	default:
 		return CommandInput{}, errors.New("unknown terminal passed")
 	}
