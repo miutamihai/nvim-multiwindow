@@ -1,4 +1,5 @@
 local BIN_PATH = "~/.local/share/nvim/nvim-multiwindow"
+
 local MAC_URL =
 "https://gitlab.com/api/v4/projects/56250262/packages/generic/nvim-multiwindow/latest/nvim-multiwindow-darwin-arm64"
 local LINUX_URL =
@@ -21,28 +22,27 @@ local function bin_exists()
   end
 end
 
-local function ensure_bin()
-  local exists = bin_exists()
+local exists = bin_exists()
 
-  if not exists then
-    local os_name = vim.loop.os_uname().sysname
-    local url = MAC_URL
+if not exists then
+  local os_name = vim.loop.os_uname().sysname
+  local url = MAC_URL
 
-    if os_name == "Linux" then
-      url = LINUX_URL
-    elseif os_name == "Windows" then
-      url = WINDOWS_URL
-    end
-
-    -- TODO: Remove dependency on curl
-    os.execute(string.format("curl %s -o %s", url, BIN_PATH))
-    os.execute(string.format("chmod 777 %s", BIN_PATH))
-    return
+  if os_name == "Linux" then
+    url = LINUX_URL
+  elseif os_name == "Windows" then
+    url = WINDOWS_URL
   end
+
+  -- TODO: Remove dependency on curl
+  os.execute(string.format("curl %s -o %s", url, BIN_PATH))
+  os.execute(string.format("chmod 777 %s", BIN_PATH))
+  return
 end
 
+-- TODO: Export this as a function to let users
+-- set their own shortcuts
 vim.keymap.set('n', '<leader>N', function()
-  ensure_bin()
   local file = vim.fn.expand('%')
   os.execute(string.format("%s %s", BIN_PATH, file))
 end, { noremap = true, silent = true, desc = "[N]vimMultiwindow: New Window" })
